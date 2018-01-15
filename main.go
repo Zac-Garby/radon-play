@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/Zac-Garby/radon-play/lib"
 	"github.com/gorilla/websocket"
@@ -12,12 +13,17 @@ import (
 var upgrader = websocket.Upgrader{}
 
 func main() {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+
 	http.Handle("/", http.FileServer(http.Dir("./static/")))
 	http.HandleFunc("/run", handleRun)
 
-	fmt.Println("listening on :3000")
+	fmt.Printf("listening on :%s\n", port)
 
-	if err := http.ListenAndServe(":3000", nil); err != nil {
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Println(err)
 	}
 }
