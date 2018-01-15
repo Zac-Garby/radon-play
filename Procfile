@@ -1,1 +1,1 @@
-web: radon-play
+web: go run main.go
