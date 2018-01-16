@@ -12,7 +12,7 @@ improvement:
  - A job queue
    - Queues a number of jobs, maybe up to 32?, and won't execute more than
 	 that amount simultaneously. To reduce load on the server.
- - Option to either print the AST, the bytecode, or execute the program.
+ - Permalinks
  - Syntax highlighting
  - Some example programs
 
