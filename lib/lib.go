@@ -16,7 +16,7 @@ import (
 const timeout = time.Second * 2
 
 // HandleConnection handles a websocket connection.
-func HandleConnection(conn *websocket.Conn) error {
+func HandleConnection(conn *websocket.Conn, job string) error {
 	_, data, err := conn.ReadMessage()
 	if err != nil {
 		return err
@@ -28,7 +28,7 @@ func HandleConnection(conn *websocket.Conn) error {
 		sock = &sock{Conn: conn}
 	)
 
-	go execute(code, sock, done)
+	go execute(code, job, sock, done)
 
 	select {
 	case <-done:
@@ -41,7 +41,7 @@ func HandleConnection(conn *websocket.Conn) error {
 	return nil
 }
 
-func execute(code string, w io.Writer, done chan bool) {
+func execute(code, job string, w io.Writer, done chan bool) {
 	defer func() {
 		done <- true
 	}()
@@ -61,6 +61,11 @@ func execute(code string, w io.Writer, done chan bool) {
 		return
 	}
 
+	if job == "ast" {
+		fmt.Fprintf(w, prog.Tree())
+		return
+	}
+
 	if err := cmp.Compile(prog); err != nil {
 		fmt.Fprintln(w, err)
 		return
@@ -69,6 +74,14 @@ func execute(code string, w io.Writer, done chan bool) {
 	bc, err := bytecode.Read(cmp.Bytes)
 	if err != nil {
 		fmt.Fprintln(w, err)
+		return
+	}
+
+	if job == "bytecode" {
+		for i, instr := range bc {
+			fmt.Fprintf(w, "  %d\t%s\t%d\n", i+1, instr.Name, instr.Arg)
+		}
+
 		return
 	}
 

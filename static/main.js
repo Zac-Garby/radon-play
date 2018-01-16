@@ -8,8 +8,9 @@ function run() {
 	if (sock !== undefined) {
 		sock.close()
 	}
-	
-	sock = new WebSocket(`ws://${window.location.host}/run`)
+
+	var loc = window.location
+	sock = new WebSocket(`ws://${loc.host}/run/${loc.search}`)
 	write("waiting for server response...\n")
 
 	sock.onmessage = handleMessage

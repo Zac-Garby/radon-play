@@ -19,7 +19,7 @@ func main() {
 	}
 
 	http.Handle("/", http.FileServer(http.Dir("./static/")))
-	http.HandleFunc("/run", handleRun)
+	http.HandleFunc("/run/", handleRun)
 
 	fmt.Printf("listening on :%s\n", port)
 
@@ -33,13 +33,22 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleRun(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+
+	jobQuery, ok := q["job"]
+	if !ok {
+		jobQuery = []string{"exec"}
+	}
+
+	job := jobQuery[0]
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	if err := lib.HandleConnection(conn); err != nil {
+	if err := lib.HandleConnection(conn, job); err != nil {
 		log.Println(err)
 	}
 }
