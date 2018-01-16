@@ -8,6 +8,7 @@ import (
 
 	"github.com/Zac-Garby/radon/bytecode"
 	"github.com/Zac-Garby/radon/compiler"
+	"github.com/Zac-Garby/radon/object"
 	"github.com/Zac-Garby/radon/parser"
 	"github.com/Zac-Garby/radon/vm"
 	"github.com/gorilla/websocket"
@@ -78,7 +79,7 @@ func execute(code, job string, w io.Writer, done chan bool) {
 	}
 
 	if job == "bytecode" {
-		printBytecode(bc, cmp, w)
+		printBytecode("MAIN PROGRAM", bc, cmp.Constants, cmp.Names, w)
 
 		return
 	}
@@ -92,11 +93,14 @@ func execute(code, job string, w io.Writer, done chan bool) {
 	}
 }
 
-func printBytecode(code bytecode.Code, cmp *compiler.Compiler, w io.Writer) {
+func printBytecode(name string, code bytecode.Code, constants []object.Object, names []string, w io.Writer) {
 	offset := 0
 
-	fmt.Fprint(w, "OFFSET\tNAME                ARG\n")
+	fmt.Fprintf(w, "*** %s\n", name)
 
+	printConstantTable(constants, names, w)
+
+	fmt.Fprint(w, "OFFSET\tNAME                ARG\n")
 	for _, instr := range code {
 		hasArg := bytecode.Instructions[instr.Code].HasArg
 
@@ -113,4 +117,35 @@ func printBytecode(code bytecode.Code, cmp *compiler.Compiler, w io.Writer) {
 
 		fmt.Fprintf(w, "\n")
 	}
+
+	fmt.Fprintln(w, "\n\n")
+
+	for i, val := range constants {
+		if fn, ok := val.(*object.Function); ok {
+			printFunctionBytecode(
+				fmt.Sprintf("FUNCTION %d OF %s", i, name),
+				fn, w,
+			)
+		}
+	}
+}
+
+func printConstantTable(constants []object.Object, names []string, w io.Writer) {
+	fmt.Fprintln(w, "* CONSTANTS:")
+
+	for i, val := range constants {
+		fmt.Fprintf(w, "%d\t%s\n", i, val.String())
+	}
+
+	fmt.Fprintln(w, "\n* NAMES:")
+
+	for i, name := range names {
+		fmt.Fprintf(w, "%d\t%s\n", i, name)
+	}
+
+	fmt.Fprintln(w)
+}
+
+func printFunctionBytecode(name string, fn *object.Function, w io.Writer) {
+	printBytecode(name, fn.Code, fn.Constants, fn.Names, w)
 }
