@@ -5,6 +5,10 @@ var sock
 function run() {
 	clear()
 
+	if (sock !== undefined) {
+		sock.close()
+	}
+	
 	sock = new WebSocket(`ws://${window.location.host}/run`)
 	write("waiting for server response...\n")
 
