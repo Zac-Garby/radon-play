@@ -78,9 +78,7 @@ func execute(code, job string, w io.Writer, done chan bool) {
 	}
 
 	if job == "bytecode" {
-		for i, instr := range bc {
-			fmt.Fprintf(w, "  %d\t%s\t%d\n", i+1, instr.Name, instr.Arg)
-		}
+		printBytecode(bc, cmp, w)
 
 		return
 	}
@@ -91,5 +89,28 @@ func execute(code, job string, w io.Writer, done chan bool) {
 
 	if err := v.Error(); err != nil {
 		fmt.Fprintf(w, "err: %s\n", err.Error())
+	}
+}
+
+func printBytecode(code bytecode.Code, cmp *compiler.Compiler, w io.Writer) {
+	offset := 0
+
+	fmt.Fprint(w, "OFFSET\tNAME                ARG\n")
+
+	for _, instr := range code {
+		hasArg := bytecode.Instructions[instr.Code].HasArg
+
+		fmt.Fprintf(w, "%d\t", offset)
+
+		offset++
+
+		fmt.Fprintf(w, "%-20s", instr.Name)
+
+		if hasArg {
+			offset += 2
+			fmt.Fprintf(w, "%d\t", instr.Arg)
+		}
+
+		fmt.Fprintf(w, "\n")
 	}
 }
