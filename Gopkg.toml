@@ -20,9 +20,6 @@ git
 #  name = "github.com/x/y"
 #  version = "2.4.0"
 
-[metadata.heroku]
-  root-package = "github.com/Zac-Garby/radon-play"
-
 [[constraint]]
   branch = "master"
   name = "github.com/Zac-Garby/radon"
